@@ -1,10 +1,10 @@
-##########################################################
-## Dataset: Stock Prices
-##########################################################
-
 #load dataset
-data=read.csv("NYSEstocks.csv")
-data.pc = data[-1]
+data=read.csv("rates.csv")
+
+data[[date_col_name]] <- as.Date(data[["Date"]], format = "%m/%d/%Y")
+data_filtered <- data[data[[date_col_name]] <= as.Date("1996-12-31"), ]
+
+data.pc = data_filtered[-1]
 names(data.pc)
 
 #perform PCA on scaled data
@@ -21,22 +21,10 @@ summary(pc1.u)
 plot(pc1.u, type="l")
 pc1.u$rotation[,1]
 
-##########################################################
-## Dataset: Stock Returns
-##########################################################
 
-#load dataset
-ret=read.csv("NYSEreturn.csv")
-
-#perform PCA on scaled data
-pc.r = prcomp(ret, scale=T)
-summary(pc.r)
-plot(pc.r, type="l")
-pc.r$rotation[,1]
-
-#perform PCA on unscaled data
-pc.r.u = prcomp(ret)
-summary(pc.r.u)
-plot(pc.r.u, type="l")
-pc.r.u$rotation[,1]
-pc.r.u$rotation[,2]
+# Option 2: Re-run PCA with yields in percentage points
+yieldppoints <- data.pc * 100  # Convert 0.0783 → 7.83
+pc1_pct <- prcomp(yieldppoints, scale = F)
+summary(pc1_pct)
+plot(pc1_pct, type="l")
+pc1_pct$rotation[,1]
