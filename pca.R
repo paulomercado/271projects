@@ -56,11 +56,14 @@ VaR2 <- qnorm(0.95)*((f1^2)*pc1$sdev[1]^2+(f2^2)*pc1$sdev[2]^2)
 VaR3 <- qnorm(0.95)*((f1^2)*pc1$sdev[1]^2+(f2^2)*pc1$sdev[2]^2+(f3^2)*pc1$sdev[3]^2)
 
 #backtesting using 1997 data
-backtestdata <- subset(data_diff, Date > as.Date("1996-12-31"))[, 3:7]
-backtestdates <- dates[dates > as.Date("1996-12-31")]
+backtestdata <- subset(data, Date > as.Date("1996-12-31"))[, 3:7]
 
+backtestdates <- dates[dates > as.Date("1997-01-02")] #diff makes first day nan
+
+backtestdata.diff <- data.frame(lapply(backtestdata[ , sapply(backtestdata, is.numeric)], diff))/100 #in bps
+  
 #using bond duration to calculate change in bond price i.e dB=B*D*dy=sum(BiTi)*dy
-dailyPL <- as.matrix(backtestdata) %*% BiTi
+dailyPL <- as.matrix(backtestdata.diff) %*% BiTi
 
 backtest_results <- data.frame(
   Date = backtestdates,  
@@ -71,3 +74,6 @@ backtest_results <- data.frame(
 )
 
 colSums(backtest_results[ , 3:5])/length(backtestdates) # % of days where VaR has been breached
+
+
+
