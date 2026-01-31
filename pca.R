@@ -14,12 +14,12 @@ data_diff$Date <- dates[-1]
 data_filtered <- subset(data_diff, Date <= as.Date("1996-12-31"))
 
 #express in bps
-data.pc <- data_filtered[ , -ncol(data_filtered)] / 100
+data.pc <- data_filtered[ , -ncol(data_filtered)] *10000
 
 names(data.pc)
 
 #perform PCA on scaled data
-pc1 = prcomp(data.pc, scale=T)
+pc1 = prcomp(data.pc)
 summary(pc1)
 plot(pc1, type="l")
 pc1$rotation
@@ -51,16 +51,20 @@ f1 <- sum(a1*BiTi)
 f2 <- sum(a2*BiTi)
 f3 <- sum(a3*BiTi)
 
-VaR1 <- qnorm(0.95)*(f1^2)*pc1$sdev[1]^2
-VaR2 <- qnorm(0.95)*((f1^2)*pc1$sdev[1]^2+(f2^2)*pc1$sdev[2]^2)
-VaR3 <- qnorm(0.95)*((f1^2)*pc1$sdev[1]^2+(f2^2)*pc1$sdev[2]^2+(f3^2)*pc1$sdev[3]^2)
+sd1 <- sqrt((f1^2)*pc1$sdev[1]^2)
+sd2 <- sqrt(((f1^2)*pc1$sdev[1]^2+(f2^2)*pc1$sdev[2]^2))
+sd3 <- sqrt(((f1^2)*pc1$sdev[1]^2+(f2^2)*pc1$sdev[2]^2+(f3^2)*pc1$sdev[3]^2))
+
+VaR1 <- qnorm(0.95)*sd1
+VaR2 <- qnorm(0.95)*sd2
+VaR3 <- qnorm(0.95)*sd3
 
 #backtesting using 1997 data
 backtestdata <- subset(data, Date > as.Date("1996-12-31"))[, 3:7]
 
 backtestdates <- dates[dates > as.Date("1997-01-02")] #diff makes first day nan
 
-backtestdata.diff <- data.frame(lapply(backtestdata[ , sapply(backtestdata, is.numeric)], diff))/100 #in bps
+backtestdata.diff <- data.frame(lapply(backtestdata[ , sapply(backtestdata, is.numeric)], diff))*10000 #in bps
   
 #using bond duration to calculate change in bond price i.e dB=B*D*dy=sum(BiTi)*dy
 dailyPL <- as.matrix(backtestdata.diff) %*% BiTi
