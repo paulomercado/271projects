@@ -1,5 +1,6 @@
 #Loading dataset
-setwd("D:/School/ADMU/M AMF/SEM 2/271.7")
+setwd('/Users/pjam/Desktop/School/M AMF/SEM 2/271.7projects')
+
 data=read.csv("rates.csv")
 
 #Fixing Date
@@ -60,7 +61,7 @@ VaR2 <- qnorm(0.95)*sd2
 VaR3 <- qnorm(0.95)*sd3
 
 #backtesting using 1997 data
-backtestdata <- subset(data, Date > as.Date("1996-12-31"))[, 3:7]
+backtestdata <- subset(data, Date > as.Date("1996-12-31"))[, 4:8]
 
 backtestdates <- dates[dates > as.Date("1997-01-02")] #diff makes first day nan
 
@@ -72,9 +73,9 @@ dailyPL <- as.matrix(backtestdata.diff) %*% BiTi
 backtest_results <- data.frame(
   Date = backtestdates,  
   dailyPL = dailyPL,
-  exceed_1 = dailyPL < -VaR1,
-  exceed_2 = dailyPL < -VaR2,
-  exceed_3 = dailyPL < -VaR3
+  exceed_1 = dailyPL >= VaR1,
+  exceed_2 = dailyPL >= VaR2,
+  exceed_3 = dailyPL >= VaR3
 )
 
 colSums(backtest_results[ , 3:5])/length(backtestdates) # % of days where VaR has been breached
